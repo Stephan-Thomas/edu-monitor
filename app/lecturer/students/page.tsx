@@ -11,8 +11,29 @@ import {
 import { IoWarning } from "react-icons/io5";
 import { AiOutlineDownload } from "react-icons/ai";
 import Sidebar from "@/app/components/lecturer/Sidebar";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "../../api/axios";
+
+type User = { id: string; fullName?: string };
 
 export default function LecturerStudentsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/");
+    api
+      .get("/auth/me")
+      .then((res) => setUser(res.data.user))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
   return (
     <>
       <Head>

@@ -21,7 +21,11 @@ import {
   Tooltip,
   Area,
 } from "recharts";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 import Sidebar from "../components/students/Sidebar";
+import DashboardSkeleton from "../components/students/DashboardSkeleton";
 
 const data = [
   { name: "Yr 1 Sem 1", gpa: 3.2 },
@@ -30,7 +34,68 @@ const data = [
   { name: "Yr 2 Sem 2", gpa: 4.12 },
 ];
 
+type User = {
+  id: string;
+  email: string;
+  fullName: string;
+  department?: string;
+  matricNumber?: string;
+  role?: string;
+};
+
 export default function DashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        // token invalid / expired
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        setSessionExpired(true);
+        setLoading(false);
+
+        setTimeout(() => {
+          router.push("/");
+        }, 6000);
+      });
+  }, []);
+
+  if (sessionExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f6f6f8] dark:bg-[#121520]">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="h-14 w-14 rounded-full border-4 border-red-500/30 border-t-red-500 animate-spin" />
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            Session expired
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Redirecting you to login…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!user) return null;
+
   return (
     <>
       <Head>
@@ -68,8 +133,8 @@ export default function DashboardPage() {
                   }}
                 ></div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#121317] dark:text-white tracking-tight">
-                    Welcome back, Chinedu
+                  <h1 className="text-2xl md:text-3xl font-bold uppercase text-[#121317] dark:text-white tracking-tight">
+                    Welcome back, {user.fullName}!
                   </h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-[#656d86] dark:text-gray-400">
                     <span>Computer Science</span>

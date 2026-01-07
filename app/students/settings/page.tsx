@@ -1,3 +1,4 @@
+"use client";
 import Sidebar from "@/app/components/students/Sidebar";
 import Head from "next/head";
 import {
@@ -14,8 +15,53 @@ import {
   MdLaptopMac,
   MdSmartphone,
 } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+import DashboardSkeleton from "@/app/components/students/DashboardSkeleton";
+
+type User = {
+  id: string;
+  email: string;
+  fullName: string;
+  department?: string;
+  userId?: string;
+  phoneNumber?: string;
+  level?: string;
+  role?: string;
+};
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        // token invalid / expired
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!user) return null;
+
   return (
     <>
       <Head>
@@ -171,7 +217,7 @@ export default function SettingsPage() {
                         <input
                           className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
                           type="text"
-                          value="Chinedu Okafor"
+                          value={user.fullName}
                         />
                       </div>
                       <div>
@@ -182,7 +228,7 @@ export default function SettingsPage() {
                           className="w-full bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm text-[#656d86] dark:text-gray-500 cursor-not-allowed"
                           readOnly
                           type="text"
-                          value="CSC/2021/1045"
+                          value={user.userId || "U12345678"}
                         />
                       </div>
                       <div>
@@ -192,7 +238,7 @@ export default function SettingsPage() {
                         <input
                           className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
                           type="email"
-                          value="chinedu.o@uni.edu.ng"
+                          value={user.email}
                         />
                       </div>
                       <div>
@@ -202,7 +248,7 @@ export default function SettingsPage() {
                         <input
                           className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
                           type="tel"
-                          value="+234 801 234 5678"
+                          value={user.phoneNumber || ""}
                         />
                       </div>
                       <div>
@@ -213,7 +259,7 @@ export default function SettingsPage() {
                           className="w-full bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm text-[#656d86] dark:text-gray-500 cursor-not-allowed"
                           readOnly
                           type="text"
-                          value="Computer Science"
+                          value={user.department || "Computer Science"}
                         />
                       </div>
                       <div>
@@ -224,7 +270,7 @@ export default function SettingsPage() {
                           className="w-full bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm text-[#656d86] dark:text-gray-500 cursor-not-allowed"
                           readOnly
                           type="text"
-                          value="300 Level"
+                          value={user.level || "400"}
                         />
                       </div>
                     </div>

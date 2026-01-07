@@ -10,10 +10,13 @@ import {
   MdLogout,
 } from "react-icons/md";
 import { usePathname } from "next/navigation";
+import api from "../../api/axios";
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const pathName = usePathname();
   const [isopen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <>
@@ -114,17 +117,22 @@ const Sidebar = () => {
                 <MdSettings className="text-[20px]" />
                 <span className="text-sm font-medium">Settings</span>
               </a>
-              <a
-                className={
-                  pathName == "/students/logout"
-                    ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1e3fae]/10 text-[#1e3fae] group transition-colors"
-                    : "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#656d86] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#121317] dark:hover:text-white transition-colors"
-                }
-                href="#"
+              <button
+                onClick={async () => {
+                  try {
+                    await api.post("/auth/logout");
+                  } catch (_) {}
+
+                  // remove all token keys we use
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("accessToken");
+                  router.push("/");
+                }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#656d86] hover:bg-gray-100"
               >
                 <MdLogout className="text-[20px]" />
                 <span className="text-sm font-medium">Logout</span>
-              </a>
+              </button>
             </div>
           </nav>
           {/* User Mini Profile (Mobile only usually, but good for bottom of sidebar) */}

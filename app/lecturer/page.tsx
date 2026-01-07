@@ -1,3 +1,4 @@
+"use client";
 import Head from "next/head";
 import {
   MdSchool,
@@ -22,8 +23,43 @@ import {
 import { LuChartNoAxesCombined } from "react-icons/lu";
 import { IoIosTrendingUp } from "react-icons/io";
 import Sidebar from "../components/lecturer/Sidebar";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "../api/axios";
+
+type User = {
+  id: string;
+  fullName?: string;
+  role?: string;
+};
 
 export default function LecturerDashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
+  if (loading) return null;
+
   return (
     <>
       <Head>
@@ -105,7 +141,7 @@ export default function LecturerDashboard() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-[#111318] dark:text-white tracking-tight">
-                      Welcome back, Dr. Adebayo 👋
+                      Welcome back, {user?.fullName ?? "Lecturer"} 👋
                     </h1>
                     <p className="text-[#616b89] dark:text-gray-400 mt-1">
                       2023/2024 Session • Second Semester • Week 8

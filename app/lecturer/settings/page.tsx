@@ -1,7 +1,9 @@
 "use client";
 import Head from "next/head";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
 import {
   MdMenu,
   MdNotifications,
@@ -19,6 +21,22 @@ import Sidebar from "@/app/components/lecturer/Sidebar";
 
 export default function LecturerSettingsPage() {
   const pathName = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<{ fullName?: string } | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/");
+    api
+      .get("/auth/me")
+      .then((res) => setUser(res.data.user))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
   return (
     <>
       <Head>
@@ -87,7 +105,7 @@ export default function LecturerSettingsPage() {
                     ></div>
                     <div className="hidden md:block">
                       <p className="text-sm font-medium text-[#111318] dark:text-white">
-                        Dr. Adebayo
+                        {user?.fullName ?? "Lecturer"}
                       </p>
                       <p className="text-xs text-[#616b89] dark:text-gray-400">
                         Computer Science

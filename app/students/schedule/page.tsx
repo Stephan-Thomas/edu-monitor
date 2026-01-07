@@ -1,3 +1,4 @@
+"use client";
 import Sidebar from "@/app/components/students/Sidebar";
 import Head from "next/head";
 import {
@@ -9,8 +10,51 @@ import {
   MdChevronLeft,
   MdChevronRight,
 } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+import DashboardSkeleton from "@/app/components/students/DashboardSkeleton";
+
+type User = {
+  id: string;
+  email: string;
+  fullName: string;
+  department?: string;
+  matricNumber?: string;
+  role?: string;
+};
 
 export default function SchedulePage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        // token invalid / expired
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!user) return null;
+
   return (
     <>
       <Head>

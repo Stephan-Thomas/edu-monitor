@@ -7,8 +7,66 @@ import {
   MdVisibility,
   MdArrowForward,
 } from "react-icons/md";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "./api/axios";
+import axios from "axios";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  // 1️⃣ Store input values in state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // 2️⃣ Build payload from state
+  const handleLogin = async () => {
+    setAuthError(null);
+
+    if (!email || !password) {
+      setAuthError("Email and password are required");
+      return;
+    }
+
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+      setSuccessMessage(
+        res.data.message || "Logged in successfully. Redirecting..."
+      );
+      // Store tokens under both keys for backward compatibility
+      const tokenValue = res.data.accessToken || res.data.token || "";
+      if (tokenValue) {
+        localStorage.setItem("accessToken", tokenValue);
+        localStorage.setItem("token", tokenValue);
+      }
+      const userRole = res.data?.user?.role ?? res.data?.role;
+      setTimeout(() => {
+        if (userRole === "student") {
+          router.push("/students");
+        } else if (userRole === "lecturer") {
+          router.push("/lecturer");
+        } else {
+          router.push("/login");
+        }
+      }, 2000);
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          setAuthError(err.response.data?.message || "Login failed");
+        } else {
+          setAuthError("Cannot reach server");
+        }
+      } else {
+        setAuthError("Unexpected error");
+      }
+    }
+  };
+
   return (
     <>
       <Head>
@@ -42,7 +100,7 @@ export default function LoginPage() {
               }}
             ></div>
             <div className="absolute inset-0 z-10 bg-[#1e3fae]/80 mix-blend-multiply"></div>
-            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute inset-0 z-10 bg-linear-to-t from-black/60 to-transparent"></div>
             {/* Content on top of image */}
             <div className="relative z-20 flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#1e3fae]">
@@ -127,6 +185,8 @@ export default function LoginPage() {
                       className="form-input flex w-full rounded-lg text-[#121317] dark:text-white dark:bg-[#1f2937] border border-[#dcdee5] dark:border-gray-700 focus:border-[#1e3fae] focus:ring-1 focus:ring-[#1e3fae] h-12 pl-11 pr-4 placeholder:text-[#656d86] dark:placeholder:text-gray-500 text-base font-normal transition-all"
                       placeholder="student@university.edu.ng"
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                 </label>
@@ -141,6 +201,8 @@ export default function LoginPage() {
                       className="form-input flex w-full rounded-lg text-[#121317] dark:text-white dark:bg-[#1f2937] border border-[#dcdee5] dark:border-gray-700 focus:border-[#1e3fae] focus:ring-1 focus:ring-[#1e3fae] h-12 pl-11 pr-12 placeholder:text-[#656d86] dark:placeholder:text-gray-500 text-base font-normal transition-all"
                       placeholder="Enter your password"
                       type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                     <button
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
@@ -150,6 +212,10 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </label>
+                {authError && <p className="text-red-500">{authError}</p>}
+                {successMessage && (
+                  <p className="text-green-500">{successMessage}</p>
+                )}
                 {/* Utility Links */}
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -172,6 +238,7 @@ export default function LoginPage() {
                 <button
                   className="mt-2 w-full bg-[#1e3fae] hover:bg-[#162f8a] text-white h-12 rounded-lg font-bold text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
                   type="submit"
+                  onClick={handleLogin}
                 >
                   Secure Login
                   <MdArrowForward className="text-[18px]" />
@@ -183,9 +250,9 @@ export default function LoginPage() {
                   Don't have an account?
                   <a
                     className="text-[#1e3fae] dark:text-blue-400 font-semibold hover:underline"
-                    href="#"
+                    href="/auth/signup"
                   >
-                    Contact Administration
+                    Signup
                   </a>
                 </p>
                 <div className="w-full border-t border-gray-100 dark:border-gray-800 mt-2 pt-6">

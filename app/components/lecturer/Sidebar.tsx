@@ -11,8 +11,12 @@ import {
   MdLogout,
 } from "react-icons/md";
 
+import { useRouter } from "next/navigation";
+import api from "../../api/axios";
+
 const Sidebar = () => {
   const pathName = usePathname();
+  const router = useRouter();
 
   return (
     <aside className="hidden lg:flex w-64 flex-col bg-[#0f38bd] text-white h-full shadow-xl z-20">
@@ -83,7 +87,17 @@ const Sidebar = () => {
         </a>
       </nav>
       <div className="p-4 border-t border-white/10">
-        <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <button
+          onClick={async () => {
+            try {
+              await api.post("/auth/logout");
+            } catch (_) {}
+            localStorage.removeItem("token");
+            localStorage.removeItem("accessToken");
+            router.push("/");
+          }}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+        >
           <MdLogout />
           <span>Log Out</span>
         </button>

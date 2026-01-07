@@ -14,6 +14,9 @@ import { SlCalender } from "react-icons/sl";
 import Sidebar from "@/app/components/students/Sidebar";
 import Navbar from "@/app/components/shared/Navbar";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import api from "../../api/axios";
+import DashboardSkeleton from "@/app/components/students/DashboardSkeleton";
 
 // Sample data extracted from your hardcoded cards (for demonstration/testing).
 // In production, this will be replaced by backend data.
@@ -418,19 +421,47 @@ function CourseCard({ course }: { course: Course }) {
   );
 }
 
+type User = {
+  id: string;
+  email: string;
+  fullName: string;
+  department?: string;
+  matricNumber?: string;
+  role?: string;
+};
+
 export default function MyCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
 
-  useEffect(() => {
-    // Fetch from backend (adjust the endpoint as needed)
-    fetch("/api/my-courses")
-      .then((res) => res.json())
-      .then((data: Course[]) => setCourses(data))
-      .catch(() => setCourses([]));
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    // For testing without backend, uncomment this:
-    setCourses(sampleCourses);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        // token invalid / expired
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
   }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!user) return null;
 
   return (
     <>

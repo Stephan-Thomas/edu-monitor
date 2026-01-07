@@ -25,6 +25,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Sidebar from "@/app/components/lecturer/Sidebar";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "../../api/axios";
+
+type User = { id: string; fullName?: string };
 
 const gradeData = [
   { grade: "A", students: 18 },
@@ -35,6 +40,22 @@ const gradeData = [
 ];
 
 export default function LecturerReportsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/");
+    api
+      .get("/auth/me")
+      .then((res) => setUser(res.data.user))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
   return (
     <>
       <Head>
@@ -109,7 +130,7 @@ export default function LecturerReportsPage() {
                     ></div>
                     <div className="hidden md:block">
                       <p className="text-sm font-medium text-[#111318] dark:text-white">
-                        Dr. Adebayo
+                        {user?.fullName ?? "Lecturer"}
                       </p>
                       <p className="text-xs text-[#616b89] dark:text-gray-400">
                         Computer Science

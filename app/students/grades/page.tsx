@@ -9,6 +9,10 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+import DashboardSkeleton from "@/app/components/students/DashboardSkeleton";
 
 const data = [
   { name: "Yr 1 Sem 1", gpa: 3.2, avg: 70 },
@@ -17,7 +21,46 @@ const data = [
   { name: "Yr 2 Sem 2", gpa: 4.12, avg: 85 },
 ];
 
+type User = {
+  id: string;
+  email: string;
+  fullName: string;
+  department?: string;
+  matricNumber?: string;
+  role?: string;
+};
+
 export default function GradesPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        // token invalid / expired
+        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        router.push("/");
+      });
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!user) return null;
+
   return (
     <>
       <Head>

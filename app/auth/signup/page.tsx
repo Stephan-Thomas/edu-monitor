@@ -437,7 +437,7 @@ export default function SignupPage() {
           } else if (userRole === "lecturer") {
             router.push("/lecturer");
           } else {
-            router.push("/login");
+            router.push("/");
           }
         }, 2000);
       }
@@ -605,7 +605,7 @@ export default function SignupPage() {
                   Already have an account?
                   <a
                     className="text-[#1e3fae] dark:text-blue-400 font-semibold hover:underline"
-                    href="/login"
+                    href="/"
                   >
                     Sign in
                   </a>

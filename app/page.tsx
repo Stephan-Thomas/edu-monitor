@@ -51,7 +51,7 @@ export default function LoginPage() {
         } else if (userRole === "lecturer") {
           router.push("/lecturer");
         } else {
-          router.push("/login");
+          router.push("/");
         }
       }, 2000);
     } catch (err: any) {

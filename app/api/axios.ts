@@ -39,7 +39,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // token invalid / expired - send user to login
       try {
-        if (typeof window !== "undefined") window.location.href = "/login";
+        if (typeof window !== "undefined") window.location.href = "/";
       } catch (e) {}
     }
     return Promise.reject(error);

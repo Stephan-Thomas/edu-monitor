@@ -1,8 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://edumonitor-backend.onrender.com/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -29,7 +27,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Global 401 interceptor
@@ -43,7 +41,7 @@ api.interceptors.response.use(
       } catch (e) {}
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

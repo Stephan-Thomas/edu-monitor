@@ -212,12 +212,32 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-xs font-medium text-[#656d86] dark:text-gray-400 mb-1.5">
-                          Full Name
+                          First Name
                         </label>
                         <input
                           className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
                           type="text"
-                          value={user.fullName}
+                          placeholder={user.fullName?.split(" ")[0] || ""}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#656d86] dark:text-gray-400 mb-1.5">
+                          Last Name
+                        </label>
+                        <input
+                          className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
+                          type="text"
+                          value={user.fullName?.split(" ")[2] || ""}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#656d86] dark:text-gray-400 mb-1.5">
+                          Middle Name
+                        </label>
+                        <input
+                          className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-[#121317] dark:text-white focus:ring-1 focus:ring-[#1e3fae] focus:border-[#1e3fae] outline-none transition"
+                          type="text"
+                          value={user.fullName?.split(" ")[1] || ""}
                         />
                       </div>
                       <div>

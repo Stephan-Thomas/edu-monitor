@@ -36,7 +36,7 @@ export default function LoginPage() {
         password,
       });
       setSuccessMessage(
-        res.data.message || "Logged in successfully. Redirecting..."
+        res.data.message || "Logged in successfully. Redirecting...",
       );
       // Store tokens under both keys for backward compatibility
       const tokenValue = res.data.accessToken || res.data.token || "";
@@ -50,6 +50,8 @@ export default function LoginPage() {
           router.push("/students");
         } else if (userRole === "lecturer") {
           router.push("/lecturer");
+        } else if (userRole === "admin") {
+          router.push("/admin");
         } else {
           router.push("/");
         }
